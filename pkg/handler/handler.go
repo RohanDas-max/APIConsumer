@@ -32,12 +32,12 @@ type response struct {
 	Org  []org
 }
 
-func Handler(ctx context.Context, userName string, t time.Duration) {
+func Handler(ctx context.Context, username string, t time.Duration) {
 	select {
 	case <-ctx.Done():
 		log.Fatal(ctx.Err().Error())
 	case <-time.After(t):
-		url := "http://api.github.com/users/" + userName
+		url := "http://api.github.com/users/" + username
 		resp := utils.Get(ctx, url)
 		defer resp.Body.Close()
 		if resp.StatusCode == http.StatusOK {
@@ -56,7 +56,7 @@ func Handler(ctx context.Context, userName string, t time.Duration) {
 			var O []org
 			json.NewDecoder(resO.Body).Decode(&O)
 
-			write(userName+".txt", response{
+			write(username+".txt", response{
 				data: data{
 					User:      d.User,
 					Followers: d.Followers,

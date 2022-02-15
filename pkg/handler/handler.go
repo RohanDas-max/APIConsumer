@@ -52,9 +52,7 @@ func Handler(ctx context.Context, userName string, t time.Duration) {
 			resO := utils.Get(ctx, d.Orgs)
 			defer resO.Body.Close()
 			var O []org
-			if err := json.NewDecoder(resO.Body).Decode(&O); err != nil {
-				panic(err)
-			}
+			json.NewDecoder(resO.Body).Decode(&O)
 
 			write(userName+".txt", response{
 				data: data{
@@ -73,8 +71,8 @@ func Handler(ctx context.Context, userName string, t time.Duration) {
 }
 
 //function to write output in a file
-func write(name string, response response) {
-	f, err := os.Create(name)
+func write(filename string, response response) {
+	f, err := os.Create(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -92,4 +90,5 @@ func write(name string, response response) {
 		desc := fmt.Sprintf("\tDescription:%s\n", s.Description)
 		f.WriteString(desc)
 	}
+	fmt.Println("stored in " + filename)
 }

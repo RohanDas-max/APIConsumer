@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Enter a username")
+	fmt.Println("Enter a github username")
 	var username string
 	fmt.Scan(&username)
 

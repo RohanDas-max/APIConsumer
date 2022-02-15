@@ -44,11 +44,13 @@ func Handler(ctx context.Context, userName string, t time.Duration) {
 			var d data
 			json.NewDecoder(resp.Body).Decode(&d)
 
+			// reading values from repository_url
 			res := utils.Get(ctx, d.Repo)
 			defer res.Body.Close()
 			var r []repo
 			json.NewDecoder(res.Body).Decode(&r)
 
+			// reading values from Organizations_url
 			resO := utils.Get(ctx, d.Orgs)
 			defer resO.Body.Close()
 			var O []org
@@ -92,3 +94,10 @@ func write(filename string, response response) {
 	}
 	fmt.Println("stored in " + filename)
 }
+
+// func Decoder(body io.ReadCloser, res interface{}) {
+// 	if err := json.NewDecoder(body).Decode(&res); err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// }

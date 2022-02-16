@@ -10,6 +10,7 @@ import (
 
 //function to get http response from a url
 func Get(ctx context.Context, url string) ([]byte, error) {
+
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return []byte{}, err

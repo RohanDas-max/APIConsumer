@@ -21,7 +21,7 @@ func TestGet(t *testing.T) {
 			name: "fail(passing wrong url)",
 			args: args{
 				ctx: context.Background(),
-				url: "asdasdasd.com",
+				url: "asdasdasd",
 			},
 
 			wantErr: true,
@@ -30,7 +30,7 @@ func TestGet(t *testing.T) {
 			name: "pass(passing github api url)",
 			args: args{
 				ctx: context.Background(),
-				url: "http://api.github.com/",
+				url: "http://google.com",
 			},
 
 			wantErr: false,
@@ -48,7 +48,7 @@ func TestGet(t *testing.T) {
 }
 
 func Test_checkStatus(t *testing.T) {
-	resp, _ := http.Get("http://api.github.com/")
+	resp, _ := http.Get("http://google.com")
 
 	type args struct {
 		h *http.Response

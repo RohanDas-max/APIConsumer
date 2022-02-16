@@ -3,21 +3,24 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/rohandas-max/ghCrwaler/pkg/utils"
 )
 
 type data struct {
+	Id        int    `json:"id"`
 	User      string `json:"login"`
 	Followers int    `json:"followers"`
-	Repo      string `json:"repos_url"`
-	Orgs      string `json:"organizations_url"`
+	Following int    `json:"following"`
+
+	Repo string `json:"repos_url"`
+	Orgs string `json:"organizations_url"`
 }
 type repo struct {
 	Name string `json:"name"`
@@ -32,44 +35,43 @@ type response struct {
 	Org  []org
 }
 
-func Handler(ctx context.Context, username string, t time.Duration) {
-	select {
-	case <-ctx.Done():
-		log.Fatal(ctx.Err().Error())
-	case <-time.After(t):
-		url := "http://api.github.com/users/" + username
-		resp := utils.Get(ctx, url)
-		defer resp.Body.Close()
-		if resp.StatusCode == http.StatusOK {
-			var d data
-			json.NewDecoder(resp.Body).Decode(&d)
+func Handler(ctx context.Context, username string) error {
+	url := "http://api.github.com/users/" + username
+	resp := utils.Get(ctx, url)
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusOK {
+		var d data
+		json.NewDecoder(resp.Body).Decode(&d)
 
-			// reading values from repository_url
-			res := utils.Get(ctx, d.Repo)
-			defer res.Body.Close()
-			var r []repo
-			json.NewDecoder(res.Body).Decode(&r)
+		// reading values from repository_url
+		res := utils.Get(ctx, d.Repo)
+		defer res.Body.Close()
+		var r []repo
+		json.NewDecoder(res.Body).Decode(&r)
 
-			// reading values from Organizations_url
-			resO := utils.Get(ctx, d.Orgs)
-			defer resO.Body.Close()
-			var O []org
-			json.NewDecoder(resO.Body).Decode(&O)
+		// reading values from Organizations_url
+		resO := utils.Get(ctx, d.Orgs)
+		defer resO.Body.Close()
+		var O []org
+		json.NewDecoder(resO.Body).Decode(&O)
 
-			write(username+".txt", response{
-				data: data{
-					User:      d.User,
-					Followers: d.Followers,
-					Repo:      d.Repo,
-					Orgs:      d.Orgs,
-				},
-				repo: r,
-				Org:  O,
-			})
-		} else {
-			log.Fatal(http.StatusNotFound)
-		}
+		write(username+".txt", response{
+			data: data{
+				Id:        d.Id,
+				User:      d.User,
+				Followers: d.Followers,
+				Following: d.Following,
+				Repo:      d.Repo,
+				Orgs:      d.Orgs,
+			},
+			repo: r,
+			Org:  O,
+		})
+	} else {
+		return errors.New(strconv.Itoa(http.StatusNotFound))
+
 	}
+	return nil
 }
 
 //function to write output in a file
@@ -79,7 +81,7 @@ func write(filename string, response response) {
 		log.Fatal(err)
 	}
 	defer f.Close()
-	s := fmt.Sprintf("DETAILS:: UserName:%s, Follower:%s, \nREPO LIST:", response.data.User, strconv.Itoa(response.data.Followers))
+	s := fmt.Sprintf("DETAILS:: Id:%d, UserName:%s, Follower:%d, Following:%d \nREPO LIST:", response.data.Id, response.data.User, response.data.Followers, response.data.Following)
 	f.WriteString(s)
 	for _, s := range response.repo {
 		s := fmt.Sprint("\t", s.Name)
@@ -94,10 +96,3 @@ func write(filename string, response response) {
 	}
 	fmt.Println("stored in " + filename)
 }
-
-// func Decoder(body io.ReadCloser, res interface{}) {
-// 	if err := json.NewDecoder(body).Decode(&res); err != nil {
-// 		log.Fatal(err)
-// 	}
-
-// }

@@ -17,7 +17,7 @@ func main() {
 	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, 7*time.Second)
 	defer cancel()
-	if err := controller.Controller(ctx, username, 1*time.Microsecond); err != nil {
+	if err := controller.Controller(ctx, username); err != nil {
 		log.Fatal(err)
 	}
 }

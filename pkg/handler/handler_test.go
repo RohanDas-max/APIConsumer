@@ -4,9 +4,12 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestHandler(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
+	defer cancel()
 	type args struct {
 		ctx      context.Context
 		username string
@@ -19,7 +22,7 @@ func TestHandler(t *testing.T) {
 		{
 			name: "pass with username rohandas-max",
 			args: args{
-				ctx:      context.Background(),
+				ctx:      ctx,
 				username: "rohandas-max",
 			},
 			wantErr: false,
@@ -27,7 +30,7 @@ func TestHandler(t *testing.T) {
 		{
 			name: "fail with wrong username",
 			args: args{
-				ctx:      context.Background(),
+				ctx:      ctx,
 				username: "rohandas-max123456789",
 			},
 			wantErr: true,
@@ -97,7 +100,7 @@ func Test_write(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := write(tt.args.filename, tt.args.response); (err != nil) != tt.wantErr {
+			if err := writeToFile(tt.args.filename, tt.args.response); (err != nil) != tt.wantErr {
 				t.Errorf("write() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

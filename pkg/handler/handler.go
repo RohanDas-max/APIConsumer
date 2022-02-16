@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/rohandas-max/ghCrwaler/pkg/utils"
@@ -52,11 +51,13 @@ func Handler(ctx context.Context, username string) error {
 		}
 		json.Unmarshal(orgByte, &o)
 
-		write(username, response{
+		if err := write(username, response{
 			data: d,
 			repo: r,
 			Org:  o,
-		})
+		}); err != nil {
+			return err
+		}
 
 	} else {
 		return err
@@ -66,10 +67,10 @@ func Handler(ctx context.Context, username string) error {
 }
 
 //function to write output in a file
-func write(filename string, response response) {
+func write(filename string, response response) error {
 	f, err := os.Create(filename)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer f.Close()
 	s := fmt.Sprintf("DETAILS:: Id:%d, UserName:%s, Follower:%d, Following:%d \nREPO LIST:", response.data.Id, response.data.User, response.data.Followers, response.data.Following)
@@ -86,4 +87,5 @@ func write(filename string, response response) {
 		f.WriteString(desc)
 	}
 	fmt.Println("stored in " + filename)
+	return nil
 }

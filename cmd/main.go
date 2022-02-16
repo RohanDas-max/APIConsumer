@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
-	"github.com/rohandas-max/ghCrwaler/pkg/handler"
+	"github.com/rohandas-max/ghCrwaler/pkg/controller"
 )
 
 func main() {
@@ -16,5 +17,7 @@ func main() {
 	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	handler.Handler(ctx, username, 1*time.Second)
+	if err := controller.Controller(ctx, username, 1*time.Microsecond); err != nil {
+		log.Fatal(err)
+	}
 }

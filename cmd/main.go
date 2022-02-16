@@ -15,7 +15,7 @@ func main() {
 	fmt.Scan(&username)
 
 	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 7*time.Second)
 	defer cancel()
 	if err := controller.Controller(ctx, username, 1*time.Microsecond); err != nil {
 		log.Fatal(err)

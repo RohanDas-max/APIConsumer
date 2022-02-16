@@ -4,9 +4,12 @@ import (
 	"context"
 	"net/http"
 	"testing"
+	"time"
 )
 
 func TestGet(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
+	defer cancel()
 	type args struct {
 		ctx context.Context
 		url string
@@ -20,7 +23,7 @@ func TestGet(t *testing.T) {
 		{
 			name: "fail(passing wrong url)",
 			args: args{
-				ctx: context.Background(),
+				ctx: ctx,
 				url: "asdasdasd",
 			},
 
@@ -29,7 +32,7 @@ func TestGet(t *testing.T) {
 		{
 			name: "pass(passing github api url)",
 			args: args{
-				ctx: context.Background(),
+				ctx: ctx,
 				url: "http://google.com",
 			},
 
@@ -73,6 +76,8 @@ func Test_checkStatus(t *testing.T) {
 			wantErr: false,
 		},
 	}
+	defer resp.Body.Close()
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := checkStatus(tt.args.h)
@@ -83,6 +88,4 @@ func Test_checkStatus(t *testing.T) {
 
 		})
 	}
-	defer resp.Body.Close()
-
 }

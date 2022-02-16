@@ -66,7 +66,7 @@ func Handler(ctx context.Context, username string) error {
 	return nil
 }
 
-//function to write output in a file
+//function to write output in a text file
 func write(filename string, response response) error {
 	f, err := os.Create(filename)
 	if err != nil {

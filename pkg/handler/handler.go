@@ -3,12 +3,9 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/rohandas-max/ghCrwaler/pkg/utils"
 )
@@ -37,40 +34,34 @@ type response struct {
 
 func Handler(ctx context.Context, username string) error {
 	url := "http://api.github.com/users/" + username
-	resp := utils.Get(ctx, url)
-	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusOK {
-		var d data
-		json.NewDecoder(resp.Body).Decode(&d)
+	var d data
+	var r []repo
+	var o []org
+	if byte, err := utils.Get(ctx, url); err == nil {
+		json.Unmarshal(byte, &d)
 
-		// reading values from repository_url
-		res := utils.Get(ctx, d.Repo)
-		defer res.Body.Close()
-		var r []repo
-		json.NewDecoder(res.Body).Decode(&r)
+		repoByte, err := utils.Get(ctx, d.Repo)
+		if err != nil {
+			return err
+		}
+		json.Unmarshal(repoByte, &r)
 
-		// reading values from Organizations_url
-		resO := utils.Get(ctx, d.Orgs)
-		defer resO.Body.Close()
-		var O []org
-		json.NewDecoder(resO.Body).Decode(&O)
+		orgByte, err := utils.Get(ctx, d.Orgs)
+		if err != nil {
+			return err
+		}
+		json.Unmarshal(orgByte, &o)
 
-		write(username+".txt", response{
-			data: data{
-				Id:        d.Id,
-				User:      d.User,
-				Followers: d.Followers,
-				Following: d.Following,
-				Repo:      d.Repo,
-				Orgs:      d.Orgs,
-			},
+		write(username, response{
+			data: d,
 			repo: r,
-			Org:  O,
+			Org:  o,
 		})
-	} else {
-		return errors.New(strconv.Itoa(http.StatusNotFound))
 
+	} else {
+		return err
 	}
+
 	return nil
 }
 

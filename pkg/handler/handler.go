@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
@@ -68,24 +69,29 @@ func Handler(ctx context.Context, username string) error {
 
 //function to write output in a text file
 func write(filename string, response response) error {
-	f, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	s := fmt.Sprintf("DETAILS:: Id:%d, UserName:%s, Follower:%d, Following:%d \nREPO LIST:", response.data.Id, response.data.User, response.data.Followers, response.data.Following)
-	f.WriteString(s)
-	for _, s := range response.repo {
-		s := fmt.Sprint("\t", s.Name)
+	if filename != "" {
+		f, err := os.Create(filename + ".txt")
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		s := fmt.Sprintf("DETAILS:: Id:%d, UserName:%s, Follower:%d, Following:%d \nREPO LIST:", response.data.Id, response.data.User, response.data.Followers, response.data.Following)
 		f.WriteString(s)
+		for _, s := range response.repo {
+			s := fmt.Sprint("\t", s.Name)
+			f.WriteString(s)
+		}
+		f.WriteString("\nOrganizations:\n")
+		for _, s := range response.Org {
+			name := fmt.Sprintf("\tName:%s\n", s.Name)
+			f.WriteString(name)
+			desc := fmt.Sprintf("\tDescription:%s\n", s.Description)
+			f.WriteString(desc)
+		}
+		fmt.Println("stored in " + filename + ".txt")
+		return nil
+	} else {
+		return errors.New("no filename entered")
 	}
-	f.WriteString("\nOrganizations:\n")
-	for _, s := range response.Org {
-		name := fmt.Sprintf("\tName:%s\n", s.Name)
-		f.WriteString(name)
-		desc := fmt.Sprintf("\tDescription:%s\n", s.Description)
-		f.WriteString(desc)
-	}
-	fmt.Println("stored in " + filename)
-	return nil
+
 }
